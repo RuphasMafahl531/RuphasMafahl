@@ -1,20 +1,20 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Uma Racing | ULTIMATE SPEED V15",
-   LoadingTitle = "Bypassing WalkSpeed Limits...",
-   LoadingSubtitle = "V15 - Property Hook",
+   Name = "Uma Racing | PHYSICS OVERDRIVE V16",
+   LoadingTitle = "Bypassing Game Engine...",
+   LoadingSubtitle = "V16 - Body Velocity",
    ConfigurationSaving = { Enabled = false }
 })
 
-local Tab = Window:CreateTab("Turbo Settings", 4483362458)
+local Tab = Window:CreateTab("Turbo Engine", 4483362458)
 
-_G.TargetSpeed = 16
+_G.SpeedPower = 0
 _G.InfStam = true
 
--- 1. INFINITE STAMINA (Kunci Utama)
+-- 1. INFINITE STAMINA (Metode yang sudah berhasil)
 Tab:CreateToggle({
-   Name = "Infinite Stamina (Locked)",
+   Name = "Infinite Stamina",
    CurrentValue = true,
    Flag = "StamToggle",
    Callback = function(Value)
@@ -24,7 +24,7 @@ Tab:CreateToggle({
                local p = game.Players.LocalPlayer
                if p.Character then
                    p.Character:SetAttribute("Stamina", 100)
-                   p.Character:SetAttribute("Sprinting", false) -- Tipu game agar tidak drain
+                   p.Character:SetAttribute("Sprinting", false)
                end
                task.wait()
            end
@@ -32,37 +32,36 @@ Tab:CreateToggle({
    end,
 })
 
--- 2. EXTREME SPEED SETTING
+-- 2. PHYSICS SPEED (Mendorong Tubuh Karakter)
 Tab:CreateSlider({
-   Name = "Custom Sprint Speed",
-   Range = {16, 500},
-   Increment = 1,
-   CurrentValue = 16,
+   Name = "Kecepatan Turbo (Physics)",
+   Range = {0, 500},
+   Increment = 5,
+   CurrentValue = 0,
    Flag = "SpeedSlider", 
    Callback = function(Value)
-       _G.TargetSpeed = Value
+       _G.SpeedPower = Value
    end,
 })
 
--- RAHAASIA V15: Hooking Properti WalkSpeed
--- Script ini akan mencegat SEMUA perubahan kecepatan karakter
-task.spawn(function()
-    local player = game.Players.LocalPlayer
+-- KUNCI V16: Injeksi Velocity Langsung ke Tubuh
+game:GetService("RunService").Heartbeat:Connect(function()
+    local p = game.Players.LocalPlayer
+    local char = p.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChild("Humanoid")
     
-    game:GetService("RunService").RenderStepped:Connect(function()
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            local hum = player.Character.Humanoid
-            
-            -- Jika kita bergerak (Magnitude > 0), paksa speed ke TargetSpeed
-            -- Ini akan menimpa perintah apapun dari tombol sprint game
-            if hum.MoveDirection.Magnitude > 0 then
-                hum.WalkSpeed = _G.TargetSpeed
-            end
+    if root and hum and _G.SpeedPower > 0 then
+        -- Jika karakter bergerak (tombol jalan/sprint ditekan)
+        if hum.MoveDirection.Magnitude > 0 then
+            -- Kita timpa kecepatan fisika karakter dengan arah jalan dikali power
+            -- Ini akan membuat karakter meluncur kencang terlepas dari WalkSpeed
+            root.Velocity = Vector3.new(hum.MoveDirection.X * _G.SpeedPower, root.Velocity.Y, hum.MoveDirection.Z * _G.SpeedPower)
         end
-    end)
+    end
 end)
 
--- 3. FITUR TAMBAHAN (Lengkap)
+-- 3. FITUR PELENGKAP
 Tab:CreateToggle({
    Name = "Anti Hit Wall (Noclip)",
    CurrentValue = false,
@@ -79,7 +78,7 @@ Tab:CreateToggle({
 })
 
 Tab:CreateButton({
-   Name = "Player ESP & Camera",
+   Name = "ESP & Camera",
    Callback = function()
        for _, v in pairs(game.Players:GetPlayers()) do
            if v ~= game.Players.LocalPlayer and v.Character then
@@ -92,7 +91,7 @@ Tab:CreateButton({
 })
 
 Rayfield:Notify({
-   Title = "V15 Injected!",
-   Content = "Set speed ke 250 dan tekan sprint sekarang!",
+   Title = "V16 Physics Loaded!",
+   Content = "Atur slider 'Physics' dan lari!",
    Duration = 5,
 })
