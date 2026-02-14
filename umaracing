@@ -1,18 +1,19 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Uma Racing | PHYSICS OVERDRIVE V16",
-   LoadingTitle = "Bypassing Game Engine...",
-   LoadingSubtitle = "V16 - Body Velocity",
+   Name = "Uma Racing | SPRINT ONLY V17",
+   LoadingTitle = "Menyesuaikan Input Sprint...",
+   LoadingSubtitle = "V17 - Context Injection",
    ConfigurationSaving = { Enabled = false }
 })
 
-local Tab = Window:CreateTab("Turbo Engine", 4483362458)
+local Tab = Window:CreateTab("Turbo Sprint", 4483362458)
 
-_G.SpeedPower = 0
+_G.SprintSpeed = 16
 _G.InfStam = true
+local isSprinting = false -- Variabel untuk cek status tombol
 
--- 1. INFINITE STAMINA (Metode yang sudah berhasil)
+-- 1. INFINITE STAMINA (Sudah Berhasil)
 Tab:CreateToggle({
    Name = "Infinite Stamina",
    CurrentValue = true,
@@ -32,38 +33,55 @@ Tab:CreateToggle({
    end,
 })
 
--- 2. PHYSICS SPEED (Mendorong Tubuh Karakter)
+-- 2. SPRINT SPEED SETTING
 Tab:CreateSlider({
-   Name = "Kecepatan Turbo (Physics)",
-   Range = {0, 500},
-   Increment = 5,
-   CurrentValue = 0,
+   Name = "Kecepatan Khusus Sprint",
+   Range = {16, 500},
+   Increment = 1,
+   CurrentValue = 16,
    Flag = "SpeedSlider", 
    Callback = function(Value)
-       _G.SpeedPower = Value
+       _G.SprintSpeed = Value
    end,
 })
 
--- KUNCI V16: Injeksi Velocity Langsung ke Tubuh
-game:GetService("RunService").Heartbeat:Connect(function()
+-- DETEKSI TOMBOL SPRINT (Mobile & PC)
+local UIS = game:GetService("UserInputService")
+
+UIS.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+    -- Cek jika tombol Shift (PC) atau tombol Sprint UI (Mobile) ditekan
+    if input.KeyCode == Enum.KeyCode.LeftShift or input.UserInputType == Enum.UserInputType.Touch then
+        isSprinting = true
+    end
+end)
+
+UIS.InputEnded:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.LeftShift or input.UserInputType == Enum.UserInputType.Touch then
+        isSprinting = false
+    end
+end)
+
+-- LOOP EKSEKUSI: Hanya paksa speed jika isSprinting = true
+game:GetService("RunService").RenderStepped:Connect(function()
     local p = game.Players.LocalPlayer
-    local char = p.Character
-    local root = char and char:FindFirstChild("HumanoidRootPart")
-    local hum = char and char:FindFirstChild("Humanoid")
+    local hum = p.Character and p.Character:FindFirstChild("Humanoid")
     
-    if root and hum and _G.SpeedPower > 0 then
-        -- Jika karakter bergerak (tombol jalan/sprint ditekan)
-        if hum.MoveDirection.Magnitude > 0 then
-            -- Kita timpa kecepatan fisika karakter dengan arah jalan dikali power
-            -- Ini akan membuat karakter meluncur kencang terlepas dari WalkSpeed
-            root.Velocity = Vector3.new(hum.MoveDirection.X * _G.SpeedPower, root.Velocity.Y, hum.MoveDirection.Z * _G.SpeedPower)
+    if hum then
+        if isSprinting and hum.MoveDirection.Magnitude > 0 then
+            -- HANYA AKTIF SAAT TOMBOL DITEKAN
+            hum.WalkSpeed = _G.SprintSpeed
+        else
+            -- KEMBALI KE NORMAL SAAT TOMBOL DILEPAS
+            -- (Bisa kamu ganti 16 ke kecepatan jalan standar gamenya)
+            hum.WalkSpeed = 16 
         end
     end
 end)
 
 -- 3. FITUR PELENGKAP
 Tab:CreateToggle({
-   Name = "Anti Hit Wall (Noclip)",
+   Name = "Anti Hit Wall",
    CurrentValue = false,
    Callback = function(Value)
        _G.AntiHit = Value
@@ -91,7 +109,7 @@ Tab:CreateButton({
 })
 
 Rayfield:Notify({
-   Title = "V16 Physics Loaded!",
-   Content = "Atur slider 'Physics' dan lari!",
+   Title = "V17 Sprint Ready!",
+   Content = "Kecepatan tinggi hanya aktif saat kamu menekan tombol sprint!",
    Duration = 5,
 })
