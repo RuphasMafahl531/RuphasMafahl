@@ -1,21 +1,20 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Uma Racing | SPAM TURBO V14",
-   LoadingTitle = "Menyiapkan Sistem Spam Speed...",
-   LoadingSubtitle = "V14 - Manual Injector",
+   Name = "Uma Racing | ULTIMATE SPEED V15",
+   LoadingTitle = "Bypassing WalkSpeed Limits...",
+   LoadingSubtitle = "V15 - Property Hook",
    ConfigurationSaving = { Enabled = false }
 })
 
-local Tab = Window:CreateTab("Turbo Hack", 4483362458)
+local Tab = Window:CreateTab("Turbo Settings", 4483362458)
 
-_G.CurrentSpeed = 16
-_G.SpamMultiplier = 2 -- Berapa banyak speed bertambah setiap kali kamu tekan sprint
+_G.TargetSpeed = 16
 _G.InfStam = true
 
--- 1. STAMINA BYPASS (Metode yang sudah berhasil)
+-- 1. INFINITE STAMINA (Kunci Utama)
 Tab:CreateToggle({
-   Name = "Infinite Stamina (Active)",
+   Name = "Infinite Stamina (Locked)",
    CurrentValue = true,
    Flag = "StamToggle",
    Callback = function(Value)
@@ -25,7 +24,7 @@ Tab:CreateToggle({
                local p = game.Players.LocalPlayer
                if p.Character then
                    p.Character:SetAttribute("Stamina", 100)
-                   p.Character:SetAttribute("IsSprinting", false)
+                   p.Character:SetAttribute("Sprinting", false) -- Tipu game agar tidak drain
                end
                task.wait()
            end
@@ -33,58 +32,39 @@ Tab:CreateToggle({
    end,
 })
 
--- 2. SPAM SPEED SETTING
+-- 2. EXTREME SPEED SETTING
 Tab:CreateSlider({
-   Name = "Kecepatan Dasar (WalkSpeed)",
-   Range = {16, 300},
+   Name = "Custom Sprint Speed",
+   Range = {16, 500},
    Increment = 1,
    CurrentValue = 16,
-   Flag = "BaseSpeed", 
+   Flag = "SpeedSlider", 
    Callback = function(Value)
-       _G.CurrentSpeed = Value
+       _G.TargetSpeed = Value
    end,
 })
 
-Tab:CreateSlider({
-   Name = "Daya Dorong (Spam Power)",
-   Range = {1, 20},
-   Increment = 1,
-   CurrentValue = 5,
-   Flag = "SpamPower", 
-   Callback = function(Value)
-       _G.SpamMultiplier = Value
-   end,
-})
-
--- DETEKSI INPUT (Kunci untuk Spam Speed)
-local UIS = game:GetService("UserInputService")
-local lastPress = 0
-
-UIS.InputBegan:Connect(function(input, gameProcessed)
-    -- Mendeteksi tombol Sprint (Shift kiri atau tombol di layar)
-    if input.KeyCode == Enum.KeyCode.LeftShift or input.UserInputType == Enum.UserInputType.Touch then
-        local p = game.Players.LocalPlayer
-        local root = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
-        local hum = p.Character and p.Character:FindFirstChild("Humanoid")
-        
-        if root and hum and hum.MoveDirection.Magnitude > 0 then
-            -- Memberikan dorongan instan setiap kali tombol ditekan/di-spam
-            root.Velocity = root.Velocity + (hum.MoveDirection * _G.SpamMultiplier * 10)
+-- RAHAASIA V15: Hooking Properti WalkSpeed
+-- Script ini akan mencegat SEMUA perubahan kecepatan karakter
+task.spawn(function()
+    local player = game.Players.LocalPlayer
+    
+    game:GetService("RunService").RenderStepped:Connect(function()
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            local hum = player.Character.Humanoid
+            
+            -- Jika kita bergerak (Magnitude > 0), paksa speed ke TargetSpeed
+            -- Ini akan menimpa perintah apapun dari tombol sprint game
+            if hum.MoveDirection.Magnitude > 0 then
+                hum.WalkSpeed = _G.TargetSpeed
+            end
         end
-    end
+    end)
 end)
 
--- LOOP PENSTABIL (Tetap memaksa WalkSpeed dasar)
-game:GetService("RunService").RenderStepped:Connect(function()
-    local hum = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
-    if hum and hum.MoveDirection.Magnitude > 0 then
-        hum.WalkSpeed = _G.CurrentSpeed
-    end
-end)
-
--- 3. FITUR TAMBAHAN LENGKAP
+-- 3. FITUR TAMBAHAN (Lengkap)
 Tab:CreateToggle({
-   Name = "Anti Hit Wall",
+   Name = "Anti Hit Wall (Noclip)",
    CurrentValue = false,
    Callback = function(Value)
        _G.AntiHit = Value
@@ -99,7 +79,7 @@ Tab:CreateToggle({
 })
 
 Tab:CreateButton({
-   Name = "ESP & Instant Camera",
+   Name = "Player ESP & Camera",
    Callback = function()
        for _, v in pairs(game.Players:GetPlayers()) do
            if v ~= game.Players.LocalPlayer and v.Character then
@@ -112,7 +92,7 @@ Tab:CreateButton({
 })
 
 Rayfield:Notify({
-   Title = "V14 Spam Active!",
-   Content = "Coba spam tombol lari kamu sekarang!",
+   Title = "V15 Injected!",
+   Content = "Set speed ke 250 dan tekan sprint sekarang!",
    Duration = 5,
 })
