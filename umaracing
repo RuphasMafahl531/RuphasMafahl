@@ -1,18 +1,19 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Uma Racing | SPEED DOMINANCE V13",
-   LoadingTitle = "Memaksa Jalur Speed...",
-   LoadingSubtitle = "V13 - Triple Thread",
+   Name = "Uma Racing | SPAM TURBO V14",
+   LoadingTitle = "Menyiapkan Sistem Spam Speed...",
+   LoadingSubtitle = "V14 - Manual Injector",
    ConfigurationSaving = { Enabled = false }
 })
 
-local Tab = Window:CreateTab("Main Hack", 4483362458)
+local Tab = Window:CreateTab("Turbo Hack", 4483362458)
 
-_G.FinalSpeed = 16
-_G.InfStam = true -- Kita aktifkan default karena sudah bekerja
+_G.CurrentSpeed = 16
+_G.SpamMultiplier = 2 -- Berapa banyak speed bertambah setiap kali kamu tekan sprint
+_G.InfStam = true
 
--- 1. STAMINA BYPASS (Tetap menggunakan metode yang sudah berhasil)
+-- 1. STAMINA BYPASS (Metode yang sudah berhasil)
 Tab:CreateToggle({
    Name = "Infinite Stamina (Active)",
    CurrentValue = true,
@@ -32,47 +33,56 @@ Tab:CreateToggle({
    end,
 })
 
--- 2. TRIPLE-THREAD SPEED (Memaksa Speed agar tidak tertimpa game)
+-- 2. SPAM SPEED SETTING
 Tab:CreateSlider({
-   Name = "Turbo Speed Value",
-   Range = {16, 500},
+   Name = "Kecepatan Dasar (WalkSpeed)",
+   Range = {16, 300},
    Increment = 1,
    CurrentValue = 16,
-   Flag = "SpeedSlider", 
+   Flag = "BaseSpeed", 
    Callback = function(Value)
-       _G.FinalSpeed = Value
+       _G.CurrentSpeed = Value
    end,
 })
 
--- JALUR 1: RenderStepped (Sangat Cepat)
+Tab:CreateSlider({
+   Name = "Daya Dorong (Spam Power)",
+   Range = {1, 20},
+   Increment = 1,
+   CurrentValue = 5,
+   Flag = "SpamPower", 
+   Callback = function(Value)
+       _G.SpamMultiplier = Value
+   end,
+})
+
+-- DETEKSI INPUT (Kunci untuk Spam Speed)
+local UIS = game:GetService("UserInputService")
+local lastPress = 0
+
+UIS.InputBegan:Connect(function(input, gameProcessed)
+    -- Mendeteksi tombol Sprint (Shift kiri atau tombol di layar)
+    if input.KeyCode == Enum.KeyCode.LeftShift or input.UserInputType == Enum.UserInputType.Touch then
+        local p = game.Players.LocalPlayer
+        local root = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+        local hum = p.Character and p.Character:FindFirstChild("Humanoid")
+        
+        if root and hum and hum.MoveDirection.Magnitude > 0 then
+            -- Memberikan dorongan instan setiap kali tombol ditekan/di-spam
+            root.Velocity = root.Velocity + (hum.MoveDirection * _G.SpamMultiplier * 10)
+        end
+    end
+end)
+
+-- LOOP PENSTABIL (Tetap memaksa WalkSpeed dasar)
 game:GetService("RunService").RenderStepped:Connect(function()
     local hum = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
     if hum and hum.MoveDirection.Magnitude > 0 then
-        hum.WalkSpeed = _G.FinalSpeed
+        hum.WalkSpeed = _G.CurrentSpeed
     end
 end)
 
--- JALUR 2: PostSimulation (Setelah Fisika Game Berjalan)
-game:GetService("RunService").PostSimulation:Connect(function()
-    local hum = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
-    if hum and hum.MoveDirection.Magnitude > 0 then
-        hum.WalkSpeed = _G.FinalSpeed
-    end
-end)
-
--- JALUR 3: Property Change Blocker
-task.spawn(function()
-    while true do
-        local hum = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
-        if hum then
-            -- Jika game mencoba mengubah speed, kita ubah balik seketika
-            hum.WalkSpeed = _G.FinalSpeed
-        end
-        task.wait() -- Looping tercepat
-    end
-end)
-
--- 3. FITUR TAMBAHAN (Lengkap)
+-- 3. FITUR TAMBAHAN LENGKAP
 Tab:CreateToggle({
    Name = "Anti Hit Wall",
    CurrentValue = false,
@@ -102,7 +112,7 @@ Tab:CreateButton({
 })
 
 Rayfield:Notify({
-   Title = "V13 Loaded!",
-   Content = "Speed sekarang dipaksa lewat 3 jalur berbeda!",
+   Title = "V14 Spam Active!",
+   Content = "Coba spam tombol lari kamu sekarang!",
    Duration = 5,
 })
