@@ -1,19 +1,19 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "Uma Racing | SPRINT ONLY V17",
-   LoadingTitle = "Menyesuaikan Input Sprint...",
-   LoadingSubtitle = "V17 - Context Injection",
+   Name = "Uma Racing | ULTIMATE V18",
+   LoadingTitle = "Bypassing WalkSpeed Engine...",
+   LoadingSubtitle = "V18 - CFrame Injection",
    ConfigurationSaving = { Enabled = false }
 })
 
-local Tab = Window:CreateTab("Turbo Sprint", 4483362458)
+local Tab = Window:CreateTab("Turbo Settings", 4483362458)
 
-_G.SprintSpeed = 16
+_G.SprintPower = 1 -- 1 adalah normal, 2-5 adalah sangat cepat
 _G.InfStam = true
-local isSprinting = false -- Variabel untuk cek status tombol
+local isSprinting = false
 
--- 1. INFINITE STAMINA (Sudah Berhasil)
+-- 1. INFINITE STAMINA (Metode yang sudah berhasil)
 Tab:CreateToggle({
    Name = "Infinite Stamina",
    CurrentValue = true,
@@ -33,24 +33,22 @@ Tab:CreateToggle({
    end,
 })
 
--- 2. SPRINT SPEED SETTING
+-- 2. CFRAME SPRINT POWER (Menambah kecepatan lari)
 Tab:CreateSlider({
-   Name = "Kecepatan Khusus Sprint",
-   Range = {16, 500},
-   Increment = 1,
-   CurrentValue = 16,
-   Flag = "SpeedSlider", 
+   Name = "Sprint Boost Power",
+   Range = {1, 10},
+   Increment = 0.5,
+   CurrentValue = 1,
+   Flag = "BoostSlider", 
    Callback = function(Value)
-       _G.SprintSpeed = Value
+       _G.SprintPower = Value
    end,
 })
 
--- DETEKSI TOMBOL SPRINT (Mobile & PC)
+-- DETEKSI INPUT SPRINT
 local UIS = game:GetService("UserInputService")
-
 UIS.InputBegan:Connect(function(input, gpe)
     if gpe then return end
-    -- Cek jika tombol Shift (PC) atau tombol Sprint UI (Mobile) ditekan
     if input.KeyCode == Enum.KeyCode.LeftShift or input.UserInputType == Enum.UserInputType.Touch then
         isSprinting = true
     end
@@ -62,26 +60,24 @@ UIS.InputEnded:Connect(function(input)
     end
 end)
 
--- LOOP EKSEKUSI: Hanya paksa speed jika isSprinting = true
-game:GetService("RunService").RenderStepped:Connect(function()
+-- EKSEKUSI CFRAME (Memaksa posisi karakter maju lebih jauh)
+game:GetService("RunService").Heartbeat:Connect(function()
     local p = game.Players.LocalPlayer
-    local hum = p.Character and p.Character:FindFirstChild("Humanoid")
+    local char = p.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChild("Humanoid")
     
-    if hum then
-        if isSprinting and hum.MoveDirection.Magnitude > 0 then
-            -- HANYA AKTIF SAAT TOMBOL DITEKAN
-            hum.WalkSpeed = _G.SprintSpeed
-        else
-            -- KEMBALI KE NORMAL SAAT TOMBOL DILEPAS
-            -- (Bisa kamu ganti 16 ke kecepatan jalan standar gamenya)
-            hum.WalkSpeed = 16 
+    if root and hum and isSprinting and _G.SprintPower > 1 then
+        if hum.MoveDirection.Magnitude > 0 then
+            -- Memindahkan posisi karakter ke depan berdasarkan arah gerak dan power
+            root.CFrame = root.CFrame + (hum.MoveDirection * (_G.SprintPower / 5))
         end
     end
 end)
 
--- 3. FITUR PELENGKAP
+-- 3. FITUR LENGKAP LAINNYA
 Tab:CreateToggle({
-   Name = "Anti Hit Wall",
+   Name = "Anti Hit Wall (Noclip)",
    CurrentValue = false,
    Callback = function(Value)
        _G.AntiHit = Value
@@ -96,7 +92,7 @@ Tab:CreateToggle({
 })
 
 Tab:CreateButton({
-   Name = "ESP & Camera",
+   Name = "Player ESP & Camera",
    Callback = function()
        for _, v in pairs(game.Players:GetPlayers()) do
            if v ~= game.Players.LocalPlayer and v.Character then
@@ -109,7 +105,8 @@ Tab:CreateButton({
 })
 
 Rayfield:Notify({
-   Title = "V17 Sprint Ready!",
-   Content = "Kecepatan tinggi hanya aktif saat kamu menekan tombol sprint!",
+   Title = "V18 CFrame Active!",
+   Content = "Set Boost Power ke 3 lalu tekan sprint!",
    Duration = 5,
 })
+
