@@ -1,0 +1,108 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Uma Racing | SPEED DOMINANCE V13",
+   LoadingTitle = "Memaksa Jalur Speed...",
+   LoadingSubtitle = "V13 - Triple Thread",
+   ConfigurationSaving = { Enabled = false }
+})
+
+local Tab = Window:CreateTab("Main Hack", 4483362458)
+
+_G.FinalSpeed = 16
+_G.InfStam = true -- Kita aktifkan default karena sudah bekerja
+
+-- 1. STAMINA BYPASS (Tetap menggunakan metode yang sudah berhasil)
+Tab:CreateToggle({
+   Name = "Infinite Stamina (Active)",
+   CurrentValue = true,
+   Flag = "StamToggle",
+   Callback = function(Value)
+       _G.InfStam = Value
+       task.spawn(function()
+           while _G.InfStam do
+               local p = game.Players.LocalPlayer
+               if p.Character then
+                   p.Character:SetAttribute("Stamina", 100)
+                   p.Character:SetAttribute("IsSprinting", false)
+               end
+               task.wait()
+           end
+       end)
+   end,
+})
+
+-- 2. TRIPLE-THREAD SPEED (Memaksa Speed agar tidak tertimpa game)
+Tab:CreateSlider({
+   Name = "Turbo Speed Value",
+   Range = {16, 500},
+   Increment = 1,
+   CurrentValue = 16,
+   Flag = "SpeedSlider", 
+   Callback = function(Value)
+       _G.FinalSpeed = Value
+   end,
+})
+
+-- JALUR 1: RenderStepped (Sangat Cepat)
+game:GetService("RunService").RenderStepped:Connect(function()
+    local hum = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+    if hum and hum.MoveDirection.Magnitude > 0 then
+        hum.WalkSpeed = _G.FinalSpeed
+    end
+end)
+
+-- JALUR 2: PostSimulation (Setelah Fisika Game Berjalan)
+game:GetService("RunService").PostSimulation:Connect(function()
+    local hum = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+    if hum and hum.MoveDirection.Magnitude > 0 then
+        hum.WalkSpeed = _G.FinalSpeed
+    end
+end)
+
+-- JALUR 3: Property Change Blocker
+task.spawn(function()
+    while true do
+        local hum = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+        if hum then
+            -- Jika game mencoba mengubah speed, kita ubah balik seketika
+            hum.WalkSpeed = _G.FinalSpeed
+        end
+        task.wait() -- Looping tercepat
+    end
+end)
+
+-- 3. FITUR TAMBAHAN (Lengkap)
+Tab:CreateToggle({
+   Name = "Anti Hit Wall",
+   CurrentValue = false,
+   Callback = function(Value)
+       _G.AntiHit = Value
+       game:GetService("RunService").Stepped:Connect(function()
+           if _G.AntiHit and game.Players.LocalPlayer.Character then
+               for _, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+                   if v:IsA("BasePart") then v.CanCollide = false end
+               end
+           end
+       end)
+   end,
+})
+
+Tab:CreateButton({
+   Name = "ESP & Instant Camera",
+   Callback = function()
+       for _, v in pairs(game.Players:GetPlayers()) do
+           if v ~= game.Players.LocalPlayer and v.Character then
+               local h = Instance.new("Highlight", v.Character)
+               h.FillColor = Color3.fromRGB(255, 0, 0)
+           end
+       end
+       workspace.CurrentCamera.FieldOfView = 120
+   end,
+})
+
+Rayfield:Notify({
+   Title = "V13 Loaded!",
+   Content = "Speed sekarang dipaksa lewat 3 jalur berbeda!",
+   Duration = 5,
+})
